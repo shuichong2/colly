@@ -17,6 +17,7 @@ package colly
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -156,6 +157,11 @@ func (r *Request) Retry() error {
 
 // Do submits the request
 func (r *Request) Do() error {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Errorf(fmt.Sprintf("do request panic:%v", err))
+		}
+	}()
 	return r.collector.scrape(r.URL.String(), r.Method, r.Depth, r.Body, r.Ctx, *r.Headers, !r.collector.AllowURLRevisit)
 }
 
