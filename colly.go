@@ -611,6 +611,11 @@ func setRequestBody(req *http.Request, body io.Reader) {
 
 func (c *Collector) fetch(u, method string, depth int, requestData io.Reader, ctx *Context, hdr http.Header, req *http.Request) error {
 	defer c.wg.Done()
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Errorf("colly fetch panic:%v", e)
+		}
+	}()
 	if ctx == nil {
 		ctx = NewContext()
 	}
