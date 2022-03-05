@@ -32,6 +32,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	debug2 "runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -612,9 +613,13 @@ func setRequestBody(req *http.Request, body io.Reader) {
 func (c *Collector) fetch(u, method string, depth int, requestData io.Reader, ctx *Context, hdr http.Header, req *http.Request) error {
 	defer c.wg.Done()
 	defer func() {
-		if e := recover(); e != nil {
-			fmt.Errorf("colly fetch panic:%v", e)
+		var e interface{}
+		if e = recover(); e == nil {
+			return
 		}
+
+		stackStr := string(debug2.Stack())
+		fmt.Printf("panic-------recover-----fetch---||err=%v||strac=%v", e, stackStr)
 	}()
 	if ctx == nil {
 		ctx = NewContext()
