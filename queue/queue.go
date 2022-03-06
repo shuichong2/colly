@@ -1,7 +1,9 @@
 package queue
 
 import (
+	"fmt"
 	"net/url"
+	debug2 "runtime/debug"
 	"sync"
 
 	"github.com/gocolly/colly/v2"
@@ -140,6 +142,16 @@ func (q *Queue) Run(c *colly.Collector) error {
 }
 
 func (q *Queue) loop(c *colly.Collector, requestc chan<- *colly.Request, complete <-chan struct{}, errc chan<- error) {
+	defer func() {
+		var e interface{}
+		if e = recover(); e == nil {
+			return
+		}
+
+		stackStr := string(debug2.Stack())
+		fmt.Printf("panic-------recover-----fetch---||err=%v||strac=%v", e, stackStr)
+	}()
+
 	var active int
 	for {
 		size, err := q.storage.QueueSize()
@@ -187,6 +199,16 @@ func (q *Queue) loop(c *colly.Collector, requestc chan<- *colly.Request, complet
 }
 
 func independentRunner(requestc <-chan *colly.Request, complete chan<- struct{}) {
+	defer func() {
+		var e interface{}
+		if e = recover(); e == nil {
+			return
+		}
+
+		stackStr := string(debug2.Stack())
+		fmt.Printf("panic-------recover-----fetch---||err=%v||strac=%v", e, stackStr)
+	}()
+
 	for req := range requestc {
 		req.Do()
 		complete <- struct{}{}
